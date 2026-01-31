@@ -60,11 +60,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
 resource publicIP 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
   name: 'challenge-public-ip'
   location: location
+  sku: { name: 'Standard' }          // <-- must be Standard SKU
   properties: {
-    publicIPAllocationMethod: 'Dynamic'
-  }
-  sku: {
-    name: 'Standard'
+    publicIPAllocationMethod: 'Static'   // <-- must be Static for Standard SKU
   }
 }
 
@@ -120,7 +118,6 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-08-01' = {
 resource nginx 'Microsoft.Compute/virtualMachines/extensions@2022-08-01' = {
   name: 'nginx-install'       // just the child name
   parent: vm                  // declare the parent VM
-  dependsOn: [vm]
   location: location
   properties: {
     publisher: 'Microsoft.Azure.Extensions'
