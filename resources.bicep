@@ -1,10 +1,10 @@
 @description('Location for all resources')
-param location string = 'westeurope'
+param location string
 
-@description('Admin username for the VM')
-param adminUsername string = 'azureuser'
+@description('Admin username for VM')
+param adminUsername string
 
-@description('Admin password for the VM')
+@description('Admin password for VM')
 @secure()
 param adminPassword string
 
@@ -41,13 +41,17 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
   name: 'challenge-vnet'
   location: location
   properties: {
-    addressSpace: { addressPrefixes: ['10.0.0.0/16'] }
+    addressSpace: {
+      addressPrefixes: ['10.0.0.0/16']
+    }
     subnets: [
       {
         name: 'web-subnet'
         properties: {
           addressPrefix: '10.0.1.0/24'
-          networkSecurityGroup: { id: nsg.id }
+          networkSecurityGroup: {
+            id: nsg.id
+          }
         }
       }
     ]
@@ -55,16 +59,13 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
 }
 
 // ------------------------
-// Public IP (Standard SKU)
+// Public IP
 // ------------------------
 resource publicIP 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
   name: 'challenge-public-ip'
   location: location
   properties: {
     publicIPAllocationMethod: 'Dynamic'
-  }
-  sku: {
-    name: 'Standard'
   }
 }
 
@@ -79,8 +80,12 @@ resource nic 'Microsoft.Network/networkInterfaces@2022-07-01' = {
       {
         name: 'ipconfig1'
         properties: {
-          subnet: { id: vnet.properties.subnets[0].id }
-          publicIPAddress: { id: publicIP.id }
+          subnet: {
+            id: vnet.properties.subnets[0].id
+          }
+          publicIPAddress: {
+            id: publicIP.id
+          }
         }
       }
     ]
@@ -118,9 +123,8 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-08-01' = {
 // Install NGINX via Custom Script Extension
 // ------------------------
 resource nginx 'Microsoft.Compute/virtualMachines/extensions@2022-08-01' = {
-  name: 'nginx-install'       // just the child name
-  parent: vm                  // declare the parent VM
-  dependsOn: [vm]
+  parent: vm
+  name: 'nginx-install'
   location: location
   properties: {
     publisher: 'Microsoft.Azure.Extensions'
@@ -131,7 +135,6 @@ resource nginx 'Microsoft.Compute/virtualMachines/extensions@2022-08-01' = {
     }
   }
 }
-
 
 // ------------------------
 // Output public IP
