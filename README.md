@@ -1,109 +1,160 @@
-Cloud Club Azure Challenge 1 – Broken Web Server 🚀
+# Cloud Club Azure Challenge 1 – Broken Web Server 🚀
 
-Welcome to The Cloud Club!
+Welcome to **The Cloud Club**!  
 Here, we learn by doing — not watching tutorials — by debugging broken cloud infrastructure.
 
-This is your first Azure challenge. It’s a warm-up to show you how our challenges work.
+This is your first Azure challenge. It's a warm-up to show you how our challenges work.
 
-📖 Scenario
+---
+
+---
+
+## 📖 Scenario
 
 A startup developer deployed a simple web server in Azure:
 
-Ubuntu VM
+- Ubuntu VM
+- NGINX installed
+- Public IP
+- Virtual Network + Subnet
+- Network Security Group (NSG)
 
-NGINX installed
+But something is wrong. **The web server is not reachable from the internet.**
 
-Public IP
+**Your mission:** figure out what's wrong, fix it, and validate your fix.
 
-Virtual Network + Subnet
+---
 
-Network Security Group (NSG)
+---
 
-But something is wrong. The web server is not reachable from the internet.
+## ⚠️ Problem
 
-Your mission: figure out what’s wrong, fix it, and validate your fix.
+When accessing the web server via the VM's public IP:
 
-⚠️ Problem
-
-When accessing the web server via the VM’s public IP:
-
+```bash
 curl http://<PUBLIC_IP>
+```
 
+The connection **times out**.
 
-The connection times out.
+✅ **Expected behavior:** You should see a simple HTML page:
 
-✅ Expected behavior: You should see a simple HTML page:
+```html
+<h1>Cloud Club Azure Challenge</h1>
+```
 
-Cloud Club Azure Challenge
+---
 
-🧑‍💻 Deployment Instructions
-Step 1: Open Azure Cloud Shell
+---
 
-Go to the Azure Portal
+## 🧑‍💻 Deployment Instructions
 
-Click the Cloud Shell icon (top-right)
+### Step 1: Open Azure Cloud Shell
 
-Select Bash or PowerShell
+1. Go to the [Azure Portal](https://portal.azure.com)
+2. Click the **Cloud Shell** icon (top-right)
+3. Select **Bash** or **PowerShell**
 
-Step 2: Create a Resource Group
-az group create --name CloudTalents-Challenge1 --location westeurope
+### Step 2: Deploy the Infrastructure
 
-Step 3: Deploy the Broken Infrastructure
+Deploy using subscription-level deployment:
 
-Copy the challenge.bicep file into Cloud Shell, then run:
-
-az deployment group create \
-  --resource-group CloudTalents-Challenge1 \
-  --template-file challenge.bicep \
+```bash
+az deployment sub create \
+  --location westeurope \
+  --template-file day-1-challenge.bicep \
   --parameters adminPassword='P@ssw0rd1234!'
-
+```
 
 Wait until deployment completes.
 
-🕵️ Step 4: Investigate
+---
+
+---
+
+## 🕵️ Step 3: Investigate
 
 Check the following Azure resources:
 
-Virtual Network (VNet)
+- Virtual Network (VNet)
+- Subnet
+- Network Security Group (NSG)
+- Network Interface (NIC)
+- Virtual Machine
 
-Subnet
-
-Network Security Group (NSG)
-
-Network Interface (NIC)
-
-Virtual Machine
-
-💡 Hint: Think about how traffic flows from the internet to a VM in Azure.
+💡 **Hint:** Think about how traffic flows from the internet to a VM in Azure.  
 What controls inbound traffic?
 
-Step 5: Fix It
+---
 
-The problem is intentional: NSG does not allow HTTP (port 80).
+---
 
-Fix it via the Azure Portal:
+## 🔧 Step 4: Fix It
 
-Go to Network Security Groups → challenge-nsg → Inbound security rules
+The problem is intentional: **NSG does not allow HTTP (port 80).**
 
-Add a rule allowing:
+### Fix it via the Azure Portal:
 
-Source: Any
+1. Go to **Network Security Groups** → `challenge-nsg` → **Inbound security rules**
+2. Add a rule allowing:
+   - **Source:** Any
+   - **Destination:** Any
+   - **Protocol:** TCP
+   - **Port:** 80
+   - **Action:** Allow
+3. Save and retry accessing the web server
 
-Destination: Any
+### Or fix it via Azure CLI:
 
-Protocol: TCP
+```bash
+az network nsg rule create \
+  --resource-group CloudClub-Challenge1-RG \
+  --nsg-name challenge-nsg \
+  --name Allow-HTTP \
+  --priority 1010 \
+  --direction Inbound \
+  --access Allow \
+  --protocol Tcp \
+  --destination-port-ranges 80
+```
 
-Port: 80
+---
 
-Action: Allow
+---
 
-Save and retry accessing the web server.
+## ✅ Step 5: Validate
 
-Step 6: Validate
-curl http://$(az vm show -d -g CloudTalents-Challenge1 -n challenge-vm --query publicIps -o tsv)
+Test the web server:
 
+```bash
+curl http://$(az vm show -d -g CloudClub-Challenge1-RG -n challenge-vm --query publicIps -o tsv)
+```
 
-✅ Success: The HTML page appears. Challenge solved!
+✅ **Success:** The HTML page appears. Challenge solved!
 
-Step 7: Clean Up
-az group delete --name CloudTalents-Challenge1 --yes --no-waitcd# azure-challenge-day-1
+---
+
+## 🧹 Step 6: Clean Up
+
+Delete the resource group to avoid charges:
+
+```bash
+az group delete --name CloudClub-Challenge1-RG --yes --no-wait
+```
+
+---
+
+## 📚 What You Learned
+
+- How to deploy Azure infrastructure using Bicep
+- Understanding Network Security Groups (NSGs)
+- Troubleshooting network connectivity issues
+- How inbound traffic rules control VM access
+
+---
+
+## 🎉 Next Steps
+
+Ready for more challenges? Check out the next challenge in this series!
+
+**Happy Learning!** 🚀
