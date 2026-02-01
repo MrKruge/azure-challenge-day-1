@@ -1,9 +1,12 @@
-# Cloud Club Azure Challenge 1 – Broken Web Server 🚀
+# 🔷 Azure - Day 1 Challenge
 
-Welcome to **The Cloud Club**!  
+Welcome to **The Cloud Club**!
+
 Here, we learn by doing — not watching tutorials — by debugging broken cloud infrastructure.
 
 This is your first Azure challenge. It's a warm-up to show you how our challenges work.
+
+**Quick overview:** Deploy broken infrastructure → Find what's wrong → Fix it → Post your win in #wins
 
 ---
 
@@ -37,14 +40,15 @@ curl http://<PUBLIC_IP>
 
 The connection **times out**.
 
-✅ **Expected behavior:** You should see a simple HTML page:
+### ✅ Expected Behavior
+
+The web server should be accessible from the internet via HTTP (port 80).
 
 ```html
 <h1>Cloud Club Azure Challenge</h1>
 ```
 
 ---
-
 ---
 
 ## 🧑‍💻 Deployment Instructions
@@ -53,26 +57,34 @@ The connection **times out**.
 
 1. Go to the [Azure Portal](https://portal.azure.com)
 2. Click the **Cloud Shell** icon (top-right)
-3. Select **Bash** or **PowerShell**
+3. Select **Bash**
 
-### Step 2: Deploy the Infrastructure
-
-Deploy using subscription-level deployment:
+### Step 2: Create a Resource Group
 
 ```bash
-az deployment sub create \
-  --location westeurope \
-  --template-file day-1-challenge.bicep \
-  --parameters adminPassword='P@ssw0rd1234!'
+echo "Creating Resource Group CloudClub-Challenge1..."
+az group create \
+  --name "CloudClub-Challenge1" \
+  --location westeurope
+```
+### Step 3: Deploy the Broken Infrastructure
+
+Copy the code and run in the terminal:
+
+```bash
+curl -o challenge.bicep https://raw.githubusercontent.com/MrKruge/azure-challenge-day-1/main/day-1-challenge.bicep
+
+az deployment group create \
+  --resource-group CloudClub-Challenge1 \
+  --template-file challenge.bicep \
+  --parameters adminPassword='hjErTzzsZWT5BjmWxXNV'
 ```
 
 Wait until deployment completes.
 
----
+**If it fails, figure out why!** 🤔 
 
----
-
-## 🕵️ Step 3: Investigate
+### 🕵️ Step 4: Investigate
 
 Check the following Azure resources:
 
@@ -82,79 +94,79 @@ Check the following Azure resources:
 - Network Interface (NIC)
 - Virtual Machine
 
-💡 **Hint:** Think about how traffic flows from the internet to a VM in Azure.  
-What controls inbound traffic?
+💡 **Hint:** Think about how traffic flows from the internet to a VM in Azure.
 
----
+### Step 5: Fix It
 
----
+Fix it via the Azure Portal:
 
-## 🔧 Step 4: Fix It
-
-The problem is intentional: **NSG does not allow HTTP (port 80).**
-
-### Fix it via the Azure Portal:
-
-1. Go to **Network Security Groups** → `challenge-nsg` → **Inbound security rules**
-2. Add a rule allowing:
-   - **Source:** Any
-   - **Destination:** Any
-   - **Protocol:** TCP
-   - **Port:** 80
-   - **Action:** Allow
+1. Go to **Network Security Groups**
+2. Find the missing rule / Fix it in the **most secure way**
 3. Save and retry accessing the web server
 
-### Or fix it via Azure CLI:
+### Step 6: Validate
 
 ```bash
-az network nsg rule create \
-  --resource-group CloudClub-Challenge1-RG \
-  --nsg-name challenge-nsg \
-  --name Allow-HTTP \
-  --priority 1010 \
-  --direction Inbound \
-  --access Allow \
-  --protocol Tcp \
-  --destination-port-ranges 80
-```
-
----
-
----
-
-## ✅ Step 5: Validate
-
-Test the web server:
-
-```bash
-curl http://$(az vm show -d -g CloudClub-Challenge1-RG -n challenge-vm --query publicIps -o tsv)
+curl http://$(az vm show -d -g CloudClub-Challenge1 -n challenge-vm --query publicIps -o tsv)
 ```
 
 ✅ **Success:** The HTML page appears. Challenge solved!
 
----
+**How can you get the public IP?**
 
-## 🧹 Step 6: Clean Up
+Find out a way to retrieve the public IP address!
 
-Delete the resource group to avoid charges:
+### Step 7: Clean Up
 
 ```bash
-az group delete --name CloudClub-Challenge1-RG --yes --no-wait
+az group delete --name CloudClub-Challenge1 --yes --no-wait
 ```
 
 ---
 
-## 📚 What You Learned
+---
 
-- How to deploy Azure infrastructure using Bicep
-- Understanding Network Security Groups (NSGs)
-- Troubleshooting network connectivity issues
-- How inbound traffic rules control VM access
+## 🆘 Stuck? Good, that is how we learn.
+
+Real debugging means hitting walls. The skill is knowing how to get unstuck.
+
+Post in **#stuck** with:
+
+- What you've checked so far
+- What you're seeing (or not seeing)
+
+**How we help each other here:**  
+Don't ask for the answer — ask for a nudge. Don't give answers — give hints.
+
+That's how we all get better.
 
 ---
 
-## 🎉 Next Steps
+---
 
-Ready for more challenges? Check out the next challenge in this series!
+## 🏆 Solved it? Now Share Your Win.
 
-**Happy Learning!** 🚀
+Head to **#wins** and post:
+
+- Screenshot of your success message
+- What did you check first?
+- What was your "aha" moment? (Keep it spoiler-free!)
+
+Don't overthink it — a few sentences is perfect.
+
+This is how we learn here: **by doing, sharing, and helping each other get better.**
+
+See you in the community. 🚀
+
+---
+---
+
+## ⚡ Did you share your win? Here's your next step...
+
+You've completed your first challenge. You're not here to watch — you're here to do.
+
+Ready for something harder?
+
+👉 **[This Month's Azure Challenge](../monthly-challenge/Month-01/)**
+
+A new troubleshooting challenge drops every month — each one different, each one harder than Day 1.
